@@ -1,103 +1,82 @@
+<?php
+// SQLite database file path
+$database = '/var/www/smart_window.db';
+
+// Create a new SQLite database connection
+$db = new SQLite3($database);
+
+// Check if the form is submitted for adding a scheduled action
+if (isset($_POST['add_action'])) {
+    $action = $_POST['action'];
+    $date = $_POST['date'];
+
+    // Insert the new scheduled action into the database
+    $query = "INSERT INTO schedules (ACTION, date) VALUES ('$action', '$date')";
+    $db->exec($query);
+}
+
+// Check if the form is submitted for deleting a scheduled action
+if (isset($_POST['delete_action'])) {
+    $id = $_POST['id'];
+
+    // Delete the scheduled action from the database
+    $query = "DELETE FROM schedules WHERE id = '$id'";
+    $db->exec($query);
+}
+
+// Fetch all scheduled actions from the database
+$query = "SELECT * FROM schedules";
+$result = $db->query($query);
+
+?>
+
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Schedule Action</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f2f2f2;
-            margin: 0;
-            padding: 20px;
-            text-align: center;
-        }
-
-        h1 {
-            color: #333;
-            margin-bottom: 30px;
-        }
-
-        div {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: inline-block;
-            width: 100px;
-            text-align: right;
-            margin-right: 10px;
-        }
-
-        select, input[type="time"] {
-            padding: 8px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            width: 200px;
-        }
-
-        button {
-            display: inline-block;
-            padding: 10px 20px;
-            font-size: 16px;
-            border: none;
-            background-color: #2196F3;
-            color: #fff;
-            text-align: center;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            border-radius: 20px;
-        }
-
-        button:hover {
-            background-color: #0a6bbf;
-        }
-
-        .back-button {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            display: inline-block;
-            padding: 10px 20px;
-            font-size: 16px;
-            border: none;
-            background-color: #2196F3;
-            color: #fff;
-            text-align: center;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            border-radius: 20px;
-        }
-    </style>
+    <title>Scheduled Actions</title>
 </head>
 <body>
-    <h1>Schedule Action</h1>
-    <a class="back-button" href="Home.php">&#8592; Back</a>
-    <div>
-        <label for="actionSelect">Action:</label>
-        <select id="actionSelect">
-            <option value="option1">Open Window</option>
-            <option value="option2">Close Window</option>
-            <option value="option3">Turn On the fan</option>
-            <option value="option3">Turn Off the fan</option>
-        </select>
-    </div>
+    <h1>Scheduled Actions</h1>
 
-    <div>
-        <label for="timeInput">Time:</label>
-        <input type="time" id="timeInput" required>
-    </div>
+    <!-- Add a new scheduled action form -->
+    <h2>Add Scheduled Action</h2>
+    <form method="POST" action="">
+        <label>Action:</label>
+        <input type="text" name="action" required><br>
 
-    <button id="scheduleButton">Schedule</button>
+        <label>Date:</label>
+        <input type="date" name="date" required><br>
 
-    <script>
-        // JavaScript for the Schedule page
-        var scheduleButton = document.getElementById("scheduleButton");
+        <input type="submit" name="add_action" value="Add Action">
+    </form>
 
-        scheduleButton.addEventListener("click", function() {
-            // Perform action when the button is clicked
-            // Add your own logic here
-            alert("Action scheduled!");
-        });
-    </script>
+    <!-- Display scheduled actions -->
+    <h2>Scheduled Actions List</h2>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Action</th>
+            <th>Date</th>
+            <th>Delete</th>
+        </tr>
+        <?php while ($row = $result->fetchArray(SQLITE3_ASSOC)) { ?>
+            <tr>
+                <td><?php echo $row['id']; ?></td>
+                <td><?php echo $row['ACTION']; ?></td>
+                <td><?php echo $row['date']; ?></td>
+                <td>
+                    <form method="POST" action="">
+                        <input type="hidden" name="id" value="<?php echo $row['id']; ?>">
+                        <input type="submit" name="delete_action" value="Delete">
+                    </form>
+                </td>
+            </tr>
+        <?php } ?>
+    </table>
 </body>
 </html>
+
+<?php
+// Close the database connection
+$db->close();
+?>
